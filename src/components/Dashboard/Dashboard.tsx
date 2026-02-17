@@ -191,7 +191,7 @@ export function Dashboard({
 
   return (
     <DashboardWrapper ref={containerRef}>
-      {mounted && dataLoaded && (
+      {mounted && dataLoaded && width > 0 && (
         <GridLayout
           className={animated ? 'rgl-animated' : undefined}
           layout={enrichedLayouts}

@@ -1,31 +1,16 @@
-import { createGlobalStyle } from 'styled-components';
+import styled from 'styled-components';
 
-export const GlobalStyle = createGlobalStyle`
-  *, *::before, *::after {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+export const AppContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 
-  html, body, #root {
-    height: 100%;
-    overflow: hidden;
-  }
-
-  body {
-    font-family: Inter, system-ui, -apple-system, sans-serif;
-    background: #0f0f1a;
-    color: #fff;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  /* react-grid-layout base styles */
+  /* react-grid-layout base */
   .react-grid-layout {
     position: relative;
   }
 
-  /* No transition on initial load — only animate after user interaction */
   .react-grid-item {
     transition: none;
   }

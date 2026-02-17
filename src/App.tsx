@@ -1,6 +1,5 @@
 import { useMemo, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import styled from 'styled-components';
 import type { WidgetType } from './widgets/types';
 import { WIDGET_REGISTRY } from './widgets/registry';
 import { setWidgetsData, addWidget, removeWidget } from './store/widgets/actions';
@@ -10,16 +9,11 @@ import { Dashboard } from './components/Dashboard/Dashboard';
 import { buildDefaultLayout, findAvailablePosition, getResponsiveCols } from './components/Dashboard/dashboardUtils';
 import { useLayoutPersistence } from './hooks/useLayoutPersistence';
 
+import { AppContainer } from './App.styled';
+
 const LAYOUT_STORAGE_KEY = 'now-dashboard-layout-v2';
 
 let widgetCounter = Date.now();
-
-const AppContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
-`;
 
 function App() {
   const dispatch = useDispatch();
