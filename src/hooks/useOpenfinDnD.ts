@@ -9,10 +9,10 @@ export interface DnDPayload<T = unknown> {
   timestamp: number;
 }
 
-interface DragState {
+interface DragState<T = unknown> {
   isDragging: boolean;
   isOver: boolean;
-  payload: DnDPayload | null;
+  payload: DnDPayload<T> | null;
 }
 
 interface UseOpenFinDragSourceOptions<T> {
@@ -45,10 +45,15 @@ interface UseOpenFinDropTargetOptions<T = unknown> {
 
 const IAB_TOPIC_DRAG_START = 'dnd:drag-start';
 const IAB_TOPIC_DRAG_END = 'dnd:drag-end';
-const MIME_TYPE = 'application/x-openfin-dnd';
+const DRAG_MARKER = 'application/x-openfin-dnd';
+
+// ─── Module-level payload store ──────────────────────────────────────────────
+// DataTransfer.getData() is sandboxed per window context in OpenFin,
+// so we use IAB as the real data carrier and store the active payload here.
+
+let activeDragPayload: DnDPayload | null = null;
 
 // ─── Utilities ───────────────────────────────────────────────────────────────
-
 
 const getWindowName = async (): Promise<string> => {
   try {
@@ -97,11 +102,15 @@ export function useOpenFinDragSource<T>({
         timestamp: Date.now(),
       };
 
-      // Set data on native DataTransfer (works across OpenFin windows)
-      e.dataTransfer.setData(MIME_TYPE, JSON.stringify(payload));
+      // Set a dummy marker so the browser allows the drag gesture.
+      // Actual data is transferred via IAB, not DataTransfer.
+      e.dataTransfer.setData(DRAG_MARKER, type);
       e.dataTransfer.effectAllowed = 'move';
 
-      // Notify other windows via IAB
+      // Store locally so same-window drops work without IAB round-trip
+      activeDragPayload = payload as DnDPayload;
+
+      // Broadcast to all windows via IAB
       await publish(IAB_TOPIC_DRAG_START, payload);
 
       setIsDragging(true);
@@ -113,6 +122,8 @@ export function useOpenFinDragSource<T>({
   const handleDragEnd = useCallback(
     async (e: React.DragEvent) => {
       e.preventDefault();
+
+      activeDragPayload = null;
 
       await publish(IAB_TOPIC_DRAG_END, { type });
 
@@ -141,7 +152,7 @@ export function useOpenFinDropTarget<T = unknown>({
   onDragLeave,
   disabled = false,
 }: UseOpenFinDropTargetOptions<T>) {
-  const [state, setState] = useState<DragState>({
+  const [state, setState] = useState<DragState<T>>({
     isDragging: false,
     isOver: false,
     payload: null,
@@ -161,67 +172,59 @@ export function useOpenFinDropTarget<T = unknown>({
 
     const handleRemoteDragStart = (_: unknown, payload: DnDPayload<T>) => {
       if (acceptTypesRef.current.includes(payload.type)) {
+        // Store payload at module level so handleDrop can access it
+        activeDragPayload = payload as DnDPayload;
         setState((prev) => ({ ...prev, isDragging: true, payload }));
       }
     };
 
     const handleRemoteDragEnd = () => {
+      activeDragPayload = null;
       setState({ isDragging: false, isOver: false, payload: null });
     };
 
-    const subscriptions: Array<() => void> = [];
+    const cleanupFns: Array<() => void> = [];
 
     const setup = async () => {
-      await fin.InterApplicationBus.subscribe(
-        { uuid: '*' },
-        IAB_TOPIC_DRAG_START,
-        handleRemoteDragStart as any
-      );
-      subscriptions.push(() =>
-        fin.InterApplicationBus.unsubscribe(
+      try {
+        await fin.InterApplicationBus.subscribe(
           { uuid: '*' },
           IAB_TOPIC_DRAG_START,
           handleRemoteDragStart as any
-        )
-      );
+        );
+        cleanupFns.push(() =>
+          fin.InterApplicationBus.unsubscribe(
+            { uuid: '*' },
+            IAB_TOPIC_DRAG_START,
+            handleRemoteDragStart as any
+          )
+        );
 
-      await fin.InterApplicationBus.subscribe(
-        { uuid: '*' },
-        IAB_TOPIC_DRAG_END,
-        handleRemoteDragEnd
-      );
-      subscriptions.push(() =>
-        fin.InterApplicationBus.unsubscribe(
+        await fin.InterApplicationBus.subscribe(
           { uuid: '*' },
           IAB_TOPIC_DRAG_END,
           handleRemoteDragEnd
-        )
-      );
+        );
+        cleanupFns.push(() =>
+          fin.InterApplicationBus.unsubscribe(
+            { uuid: '*' },
+            IAB_TOPIC_DRAG_END,
+            handleRemoteDragEnd
+          )
+        );
+      } catch (error) {
+        console.warn('[OpenFin DnD] Failed to subscribe to IAB:', error);
+      }
     };
 
     setup();
 
     return () => {
-      subscriptions.forEach((unsub) => unsub());
+      cleanupFns.forEach((fn) => fn());
     };
   }, [disabled]);
 
   // ── Native drop target handlers ──
-
-  const isValidPayload = useCallback(
-    (e: React.DragEvent): DnDPayload<T> | null => {
-      try {
-        const raw = e.dataTransfer.getData(MIME_TYPE);
-        if (!raw) return null;
-
-        const payload: DnDPayload<T> = JSON.parse(raw);
-        return acceptTypesRef.current.includes(payload.type) ? payload : null;
-      } catch {
-        return null;
-      }
-    },
-    []
-  );
 
   const handleDragOver = useCallback(
     (e: React.DragEvent) => {
@@ -238,8 +241,11 @@ export function useOpenFinDropTarget<T = unknown>({
       e.preventDefault();
 
       setState((prev) => {
-        if (!prev.isOver) {
-          callbacksRef.current.onDragEnter?.(prev.payload as DnDPayload<T>);
+        if (!prev.isOver && activeDragPayload) {
+          const payload = activeDragPayload as DnDPayload<T>;
+          if (acceptTypesRef.current.includes(payload.type)) {
+            callbacksRef.current.onDragEnter?.(payload);
+          }
         }
         return { ...prev, isOver: true };
       });
@@ -251,7 +257,7 @@ export function useOpenFinDropTarget<T = unknown>({
     (e: React.DragEvent) => {
       if (disabled) return;
 
-      // Only trigger if leaving the actual drop zone (not a child element)
+      // Only trigger when actually leaving the drop zone, not child elements
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
       const { clientX: x, clientY: y } = e;
 
@@ -268,14 +274,17 @@ export function useOpenFinDropTarget<T = unknown>({
       if (disabled) return;
       e.preventDefault();
 
-      const payload = isValidPayload(e);
-      if (payload) {
+      // Read from IAB-stored payload, NOT from DataTransfer
+      const payload = activeDragPayload as DnDPayload<T> | null;
+
+      if (payload && acceptTypesRef.current.includes(payload.type)) {
         callbacksRef.current.onDrop(payload);
       }
 
+      activeDragPayload = null;
       setState({ isDragging: false, isOver: false, payload: null });
     },
-    [disabled, isValidPayload]
+    [disabled]
   );
 
   const dropTargetProps = {
@@ -288,6 +297,7 @@ export function useOpenFinDropTarget<T = unknown>({
   return {
     isOver: state.isOver,
     isDragging: state.isDragging,
+    payload: state.payload,
     dropTargetProps,
   };
 }
