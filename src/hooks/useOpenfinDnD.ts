@@ -87,48 +87,50 @@ export function useOpenFinDragSource<T>({
   dataRef.current = data;
 
   const handleDragStart = useCallback(
-    async (e: React.DragEvent) => {
+    (e: React.DragEvent) => {
       if (disabled) {
         e.preventDefault();
         return;
       }
 
-      const windowName = await getWindowName();
+      // All DataTransfer calls MUST be synchronous within dragstart —
+      // the browser makes dataTransfer read-only after the handler yields.
+      e.dataTransfer.setData(DRAG_MARKER, type);
+      e.dataTransfer.effectAllowed = 'move';
 
       const payload: DnDPayload<T> = {
         type,
         data: dataRef.current,
-        sourceWindowName: windowName,
+        sourceWindowName: 'pending',
         timestamp: Date.now(),
       };
-
-      // Set a dummy marker so the browser allows the drag gesture.
-      // Actual data is transferred via IAB, not DataTransfer.
-      e.dataTransfer.setData(DRAG_MARKER, type);
-      e.dataTransfer.effectAllowed = 'move';
 
       // Store locally so same-window drops work without IAB round-trip
       activeDragPayload = payload as DnDPayload;
 
-      // Broadcast to all windows via IAB
-      await publish(IAB_TOPIC_DRAG_START, payload);
-
       setIsDragging(true);
       onDragStart?.(dataRef.current);
+
+      // Async work (window name + IAB broadcast) — fire-and-forget
+      getWindowName().then((windowName) => {
+        payload.sourceWindowName = windowName;
+        activeDragPayload = payload as DnDPayload;
+        publish(IAB_TOPIC_DRAG_START, payload);
+      });
     },
     [type, disabled, onDragStart]
   );
 
   const handleDragEnd = useCallback(
-    async (e: React.DragEvent) => {
+    (e: React.DragEvent) => {
       e.preventDefault();
 
       activeDragPayload = null;
-
-      await publish(IAB_TOPIC_DRAG_END, { type });
-
       setIsDragging(false);
       onDragEnd?.(dataRef.current);
+
+      // Notify other windows — fire-and-forget
+      publish(IAB_TOPIC_DRAG_END, { type });
     },
     [type, onDragEnd]
   );
@@ -170,15 +172,15 @@ export function useOpenFinDropTarget<T = unknown>({
   useEffect(() => {
     if (disabled) return;
 
-    const handleRemoteDragStart = (_: unknown, payload: DnDPayload<T>) => {
+    const handleRemoteDragStart: OpenFinIABListener = (message) => {
+      const payload = message as DnDPayload<T>;
       if (acceptTypesRef.current.includes(payload.type)) {
-        // Store payload at module level so handleDrop can access it
         activeDragPayload = payload as DnDPayload;
         setState((prev) => ({ ...prev, isDragging: true, payload }));
       }
     };
 
-    const handleRemoteDragEnd = () => {
+    const handleRemoteDragEnd: OpenFinIABListener = () => {
       activeDragPayload = null;
       setState({ isDragging: false, isOver: false, payload: null });
     };
@@ -190,13 +192,13 @@ export function useOpenFinDropTarget<T = unknown>({
         await fin.InterApplicationBus.subscribe(
           { uuid: '*' },
           IAB_TOPIC_DRAG_START,
-          handleRemoteDragStart as any
+          handleRemoteDragStart
         );
         cleanupFns.push(() =>
           fin.InterApplicationBus.unsubscribe(
             { uuid: '*' },
             IAB_TOPIC_DRAG_START,
-            handleRemoteDragStart as any
+            handleRemoteDragStart
           )
         );
 

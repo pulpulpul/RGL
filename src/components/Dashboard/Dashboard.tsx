@@ -177,7 +177,7 @@ export function Dashboard({
           return { w: Math.min(config.defaultSize.w, cols), h: config.defaultSize.h };
         }
       }
-      return { w: Math.min(4, cols), h: 4 };
+      return false;
     },
     [cols],
   );
