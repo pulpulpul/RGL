@@ -30,7 +30,7 @@ export function getResponsiveCols(width: number): number {
   return 4;
 }
 
-export function buildDefaultLayout(): LayoutItem[] {
+export function buildDefaultLayout(cols: number = MAX_COLS): LayoutItem[] {
   const items: LayoutItem[] = [];
   let cursorX = 0;
   let cursorY = 0;
@@ -38,10 +38,12 @@ export function buildDefaultLayout(): LayoutItem[] {
 
   for (const instance of DEFAULT_WIDGET_INSTANCES) {
     const config = WIDGET_REGISTRY[instance.widgetType];
-    const { w, h } = config.defaultSize;
-    const { w: minW, h: minH } = config.minSize;
+    const w = Math.min(config.defaultSize.w, cols);
+    const { h } = config.defaultSize;
+    const minW = Math.min(config.minSize.w, cols);
+    const { h: minH } = config.minSize;
 
-    if (cursorX + w > MAX_COLS) {
+    if (cursorX + w > cols) {
       cursorX = 0;
       cursorY += rowMaxH;
       rowMaxH = 0;

@@ -43,9 +43,9 @@ export function useLayoutPersistence(
     [persistNow],
   );
 
-  const resetLayout = useCallback(() => {
+  const resetLayout = useCallback((override?: LayoutItem[]) => {
     localStorage.removeItem(key);
-    setLayouts(defaultLayout);
+    setLayouts(override ?? defaultLayout);
   }, [key, defaultLayout]);
 
   const addLayoutItem = useCallback(

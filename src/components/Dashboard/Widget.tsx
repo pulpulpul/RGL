@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import type { RootState } from '../../store/rootReducer';
 import type { WidgetType } from '../../widgets/types';
 import { WIDGET_REGISTRY } from '../../widgets/registry';
-import { WidgetContent } from './WidgetContent';
+import { WIDGET_COMPONENTS } from '../../widgets/components';
 
 interface WidgetProps {
   widgetId: string;
@@ -157,7 +157,10 @@ export const Widget = memo(function Widget({ widgetId, onDelete }: WidgetProps) 
           ))}
         </TabBar>
       )}
-      {currentTab && <WidgetContent tab={currentTab} widgetType={widget.widgetType} />}
+      {currentTab && (() => {
+        const TypeComponent = WIDGET_COMPONENTS[widget.widgetType];
+        return <TypeComponent tab={currentTab} widget={widget} />;
+      })()}
     </WidgetContainer>
   );
 });

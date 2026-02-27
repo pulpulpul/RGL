@@ -101,26 +101,31 @@ const MOCK_TABS_BY_TYPE: Record<WidgetType, WidgetData['tabs']> = {
   ],
   alert: [
     {
-      label: 'Active',
-      content: 'Currently triggered alerts.',
-      items: ['BTC > $42,000 — triggered 2m ago', 'ETH gas < 20 gwei — triggered 15m ago', 'SOL +5% in 1h — triggered 8m ago'],
-    },
-    {
-      label: 'History',
-      content: 'Past alert triggers.',
-      items: ['BTC < $40,000 — 2 days ago', 'Portfolio -3% daily — 5 days ago', 'ETH > $2,500 — 1 week ago'],
+      label: 'Alerts',
+      content: 'Active and recent alerts.',
+      items: [
+        'BTC > $42,000 — triggered 2m ago',
+        'ETH gas < 20 gwei — triggered 15m ago',
+        'SOL +5% in 1h — triggered 8m ago',
+        'BTC < $40,000 — 2 days ago',
+        'Portfolio -3% daily — 5 days ago',
+        'ETH > $2,500 — 1 week ago',
+      ],
     },
   ],
   chat: [
     {
-      label: 'General',
-      content: 'General discussion channel.',
-      items: ['alice: anyone watching BTC?', 'bob: looks bullish to me', 'charlie: volume is crazy today', 'dave: careful with leverage'],
-    },
-    {
-      label: 'Trading',
-      content: 'Trading signals and discussion.',
-      items: ['signal_bot: BUY BTC 42,100 TP 43,500 SL 41,000', 'trader1: took the long, lets go', 'analyst: RSI showing overbought on 4H'],
+      label: 'Chat',
+      content: 'Discussion channel.',
+      items: [
+        'alice: anyone watching BTC?',
+        'bob: looks bullish to me',
+        'charlie: volume is crazy today',
+        'dave: careful with leverage',
+        'signal_bot: BUY BTC 42,100 TP 43,500 SL 41,000',
+        'trader1: took the long, lets go',
+        'analyst: RSI showing overbought on 4H',
+      ],
     },
   ],
   agent: [

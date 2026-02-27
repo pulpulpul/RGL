@@ -17,13 +17,13 @@ let widgetCounter = Date.now();
 
 function App() {
   const dispatch = useDispatch();
-  const defaultLayout = useMemo(() => buildDefaultLayout(), []);
+  const defaultLayout = useMemo(() => buildDefaultLayout(getResponsiveCols(window.innerWidth)), []);
   const { layouts, saveLayout, resetLayout, addLayoutItem, removeLayoutItem } =
     useLayoutPersistence(LAYOUT_STORAGE_KEY, defaultLayout);
 
   const handleResetLayout = useCallback(() => {
     dispatch(setWidgetsData(buildDefaultWidgetsData()));
-    resetLayout();
+    resetLayout(buildDefaultLayout(getResponsiveCols(window.innerWidth)));
   }, [resetLayout, dispatch]);
 
   const handleAddWidget = useCallback(

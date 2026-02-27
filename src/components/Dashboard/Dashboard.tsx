@@ -51,6 +51,21 @@ export function Dashboard({
   const dropPendingRef = useRef(false);
   const savePendingRef = useRef(false);
 
+  const cols = getResponsiveCols(width);
+  const margin: [number, number] = width < 600 ? MARGIN_SM : MARGIN_LG;
+
+  // Only persist layout changes triggered by user interaction (drag/resize),
+  // not responsive reflows caused by column count changes.
+  const userInteractingRef = useRef(false);
+  const prevColsRef = useRef(cols);
+
+  // When cols changes (responsive reflow), clear the interaction flag
+  // so that the resulting onLayoutChange is NOT persisted.
+  if (prevColsRef.current !== cols) {
+    prevColsRef.current = cols;
+    userInteractingRef.current = false;
+  }
+
   // Sync widget store with the persisted layout on initial load.
   // Only include defaults that have a layout item; create data for
   // dynamically added widgets whose IDs are in the layout.
@@ -74,34 +89,48 @@ export function Dashboard({
     });
   }, [dispatch]);
 
-  const cols = getResponsiveCols(width);
-  const margin: [number, number] = width < 600 ? MARGIN_SM : MARGIN_LG;
-
   // Enrich layout items with minW/minH from the registry and
-  // clamp widths to the current responsive column count.
+  // clamp widths + x positions to the current responsive column count.
+  // Below 900px (cols <= 6) force all widgets to full width.
+  const fullWidth = cols <= 6;
   const enrichedLayouts = useMemo(() =>
     layouts.map((item) => {
+      if (fullWidth) {
+        const widget = widgets[item.i];
+        const config = widget ? WIDGET_REGISTRY[widget.widgetType] : null;
+        return {
+          ...item,
+          x: 0,
+          w: cols,
+          minW: cols,
+          minH: config?.minSize.h ?? item.minH,
+          h: Math.max(item.h, config?.minSize.h ?? 0),
+        };
+      }
       const widget = widgets[item.i];
-      if (!widget) return { ...item, w: Math.min(item.w, cols) };
+      if (!widget) {
+        const w = Math.min(item.w, cols);
+        return { ...item, w, x: Math.min(item.x, cols - w) };
+      }
       const config = WIDGET_REGISTRY[widget.widgetType];
       const minW = Math.min(config.minSize.w, cols);
+      const w = Math.min(Math.max(item.w, minW), cols);
       return {
         ...item,
         minW,
         minH: config.minSize.h,
-        w: Math.min(Math.max(item.w, minW), cols),
+        w,
         h: Math.max(item.h, config.minSize.h),
+        x: Math.min(item.x, cols - w),
       };
     }),
-    [layouts, widgets, cols],
+    [layouts, widgets, cols, fullWidth],
   );
 
   const handleLayoutChange = useCallback(
     (newLayout: Layout) => {
       // After a drop we already saved the authoritative layout —
       // skip the grid's next compacted report to avoid overwriting it.
-      // After a save or drop, skip the grid's subsequent onLayoutChange
-      // to prevent cascading re-renders that cause infinite update depth.
       if (dropPendingRef.current) {
         dropPendingRef.current = false;
         return;
@@ -110,6 +139,10 @@ export function Dashboard({
         savePendingRef.current = false;
         return;
       }
+      // Only persist changes from user interaction (drag/resize).
+      // Responsive reflows (cols change) are transient — the canonical
+      // layout is preserved so it restores correctly at wider widths.
+      if (!userInteractingRef.current) return;
 
       const cleaned = newLayout
         .filter((item) => !item.i.startsWith('__'))
@@ -147,9 +180,11 @@ export function Dashboard({
     [onLayoutChange],
   );
 
-  // Track user interaction for animation (use drag/resize start, not onLayoutChange).
+  // Track user interaction for animation and to distinguish
+  // user-initiated changes from responsive reflows.
   const handleDragOrResize = useCallback(() => {
     if (!animated) setAnimated(true);
+    userInteractingRef.current = true;
   }, [animated]);
 
   const handleDrop = useCallback(
