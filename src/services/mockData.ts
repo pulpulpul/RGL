@@ -153,11 +153,15 @@ export function createWidgetData(id: string, widgetType: WidgetType): WidgetData
   };
 }
 
+export function buildDefaultWidgetsData(): WidgetsState {
+  const state: WidgetsState = {};
+  for (const instance of DEFAULT_WIDGET_INSTANCES) {
+    state[instance.id] = createWidgetData(instance.id, instance.widgetType);
+  }
+  return state;
+}
+
 export const fetchMockWidgetsData = (): Promise<WidgetsState> =>
   new Promise((resolve) => {
-    const state: WidgetsState = {};
-    for (const instance of DEFAULT_WIDGET_INSTANCES) {
-      state[instance.id] = createWidgetData(instance.id, instance.widgetType);
-    }
-    setTimeout(() => resolve(state), 100);
+    setTimeout(() => resolve(buildDefaultWidgetsData()), 100);
   });

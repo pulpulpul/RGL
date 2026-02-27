@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import type { WidgetType } from './widgets/types';
 import { WIDGET_REGISTRY } from './widgets/registry';
 import { setWidgetsData, addWidget, removeWidget } from './store/widgets/actions';
-import { fetchMockWidgetsData, createWidgetData } from './services/mockData';
+import { buildDefaultWidgetsData, createWidgetData } from './services/mockData';
 import { Header } from './components/Header/Header';
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { buildDefaultLayout, findAvailablePosition, getResponsiveCols } from './components/Dashboard/dashboardUtils';
@@ -22,10 +22,8 @@ function App() {
     useLayoutPersistence(LAYOUT_STORAGE_KEY, defaultLayout);
 
   const handleResetLayout = useCallback(() => {
-    fetchMockWidgetsData().then((defaults) => {
-      dispatch(setWidgetsData(defaults));
-      resetLayout();
-    });
+    dispatch(setWidgetsData(buildDefaultWidgetsData()));
+    resetLayout();
   }, [resetLayout, dispatch]);
 
   const handleAddWidget = useCallback(
