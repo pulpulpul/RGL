@@ -49,6 +49,7 @@ export function Dashboard({
   const layoutsRef = useRef(layouts);
   layoutsRef.current = layouts;
   const dropPendingRef = useRef(false);
+  const savePendingRef = useRef(false);
 
   // Sync widget store with the persisted layout on initial load.
   // Only include defaults that have a layout item; create data for
@@ -99,15 +100,17 @@ export function Dashboard({
     (newLayout: Layout) => {
       // After a drop we already saved the authoritative layout —
       // skip the grid's next compacted report to avoid overwriting it.
+      // After a save or drop, skip the grid's subsequent onLayoutChange
+      // to prevent cascading re-renders that cause infinite update depth.
       if (dropPendingRef.current) {
         dropPendingRef.current = false;
         return;
       }
-      // Filter out temporary drop placeholders and persist minW/minH
-      // metadata. Do NOT re-enforce w/h here — enrichedLayouts is the
-      // single authority for size constraints. Duplicating that logic
-      // here causes oscillation loops (enrichedLayouts clamps to cols,
-      // this handler pushes back up → infinite update depth).
+      if (savePendingRef.current) {
+        savePendingRef.current = false;
+        return;
+      }
+
       const cleaned = newLayout
         .filter((item) => !item.i.startsWith('__'))
         .map((item) => {
@@ -121,7 +124,6 @@ export function Dashboard({
           };
         });
 
-      // Skip save if layout hasn't actually changed (avoids re-render cycles).
       const current = layoutsRef.current;
       const currentMap = new Map(current.map((l) => [l.i, l]));
       const isSame =
@@ -138,6 +140,7 @@ export function Dashboard({
         });
 
       if (!isSame) {
+        savePendingRef.current = true;
         onLayoutChange(cleaned);
       }
     },
