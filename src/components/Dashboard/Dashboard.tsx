@@ -103,9 +103,12 @@ export function Dashboard({
         dropPendingRef.current = false;
         return;
       }
-      // Filter out any temporary drop placeholders and re-apply
-      // minW/minH from the registry before persisting.
-      const withConstraints = newLayout
+      // Filter out temporary drop placeholders and persist minW/minH
+      // metadata. Do NOT re-enforce w/h here — enrichedLayouts is the
+      // single authority for size constraints. Duplicating that logic
+      // here causes oscillation loops (enrichedLayouts clamps to cols,
+      // this handler pushes back up → infinite update depth).
+      const cleaned = newLayout
         .filter((item) => !item.i.startsWith('__'))
         .map((item) => {
           const widget = widgetsRef.current[item.i];
@@ -113,18 +116,17 @@ export function Dashboard({
           const config = WIDGET_REGISTRY[widget.widgetType];
           return {
             ...item,
-            w: Math.max(item.w, config.minSize.w),
-            h: Math.max(item.h, config.minSize.h),
             minW: config.minSize.w,
             minH: config.minSize.h,
           };
         });
-      // Break infinite update loops: skip save if layout hasn't actually changed.
+
+      // Skip save if layout hasn't actually changed (avoids re-render cycles).
       const current = layoutsRef.current;
       const currentMap = new Map(current.map((l) => [l.i, l]));
       const isSame =
-        withConstraints.length === current.length &&
-        withConstraints.every((item) => {
+        cleaned.length === current.length &&
+        cleaned.every((item) => {
           const prev = currentMap.get(item.i);
           return (
             prev &&
@@ -136,7 +138,7 @@ export function Dashboard({
         });
 
       if (!isSame) {
-        onLayoutChange(withConstraints);
+        onLayoutChange(cleaned);
       }
     },
     [onLayoutChange],
