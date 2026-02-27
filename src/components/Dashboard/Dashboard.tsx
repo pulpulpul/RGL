@@ -119,7 +119,25 @@ export function Dashboard({
             minH: config.minSize.h,
           };
         });
-      onLayoutChange(withConstraints);
+      // Break infinite update loops: skip save if layout hasn't actually changed.
+      const current = layoutsRef.current;
+      const currentMap = new Map(current.map((l) => [l.i, l]));
+      const isSame =
+        withConstraints.length === current.length &&
+        withConstraints.every((item) => {
+          const prev = currentMap.get(item.i);
+          return (
+            prev &&
+            prev.x === item.x &&
+            prev.y === item.y &&
+            prev.w === item.w &&
+            prev.h === item.h
+          );
+        });
+
+      if (!isSame) {
+        onLayoutChange(withConstraints);
+      }
     },
     [onLayoutChange],
   );
