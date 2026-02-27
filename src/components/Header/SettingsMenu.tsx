@@ -2,9 +2,9 @@ import { memo, useEffect, useRef, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import type { RootState } from '../../store/rootReducer';
-import type { PersonaCategory } from '../../store/persona/types';
-import { SECTORS, CREDIT_RATINGS, TENOR_PREFERENCES } from '../../store/persona/types';
-import { togglePersonaItem, setAllPersona, clearAllPersona } from '../../store/persona/actions';
+import type { PersonaCategory } from '../../store/dashboard/types';
+import { SECTORS, CREDIT_RATINGS, TENOR_PREFERENCES } from '../../store/dashboard/types';
+import { togglePersonaItem, setAllPersona, clearAllPersona } from '../../store/dashboard/actions';
 
 interface SettingsMenuProps {
   onResetLayout: () => void;

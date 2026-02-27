@@ -6,7 +6,7 @@ import type { Layout, LayoutItem } from 'react-grid-layout';
 import type { RootState } from '../../store/rootReducer';
 import type { WidgetType } from '../../widgets/types';
 import { WIDGET_REGISTRY } from '../../widgets/registry';
-import { setWidgetsData, addWidget } from '../../store/widgets/actions';
+import { setWidgetsData, addWidget } from '../../store/dashboard/actions';
 import { fetchMockWidgetsData, createWidgetData } from '../../services/mockData';
 import { Widget } from './Widget';
 import { getResponsiveCols, parseWidgetType } from './dashboardUtils';

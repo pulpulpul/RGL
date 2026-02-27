@@ -1,4 +1,4 @@
-import type { WidgetData, WidgetsState } from '../store/widgets/types';
+import type { WidgetData, WidgetsState } from '../store/dashboard/types';
 import type { WidgetType } from '../widgets/types';
 import { WIDGET_REGISTRY } from '../widgets/registry';
 

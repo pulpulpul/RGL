@@ -1,10 +1,5 @@
-import { combineReducers } from 'redux';
-import { widgetsReducer } from './widgets/reducer';
-import { personaReducer } from './persona/reducer';
+import { dashboardReducer } from './dashboard/reducer';
 
-export const rootReducer = combineReducers({
-  widgets: widgetsReducer,
-  persona: personaReducer,
-});
+export const rootReducer = dashboardReducer;
 
 export type RootState = ReturnType<typeof rootReducer>;

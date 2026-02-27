@@ -2,7 +2,7 @@ import { useMemo, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import type { WidgetType } from './widgets/types';
 import { WIDGET_REGISTRY } from './widgets/registry';
-import { setWidgetsData, addWidget, removeWidget } from './store/widgets/actions';
+import { setWidgetsData, addWidget, removeWidget } from './store/dashboard/actions';
 import { buildDefaultWidgetsData, createWidgetData } from './services/mockData';
 import { Header } from './components/Header/Header';
 import { Dashboard } from './components/Dashboard/Dashboard';
