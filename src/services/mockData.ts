@@ -1,4 +1,4 @@
-import type { WidgetData, WidgetsState } from '../store/dashboard/types';
+import type { WidgetData, WidgetsState, AgentData, AgentsState } from '../store/dashboard/types';
 import type { WidgetType } from '../widgets/types';
 import { WIDGET_REGISTRY } from '../widgets/registry';
 
@@ -8,123 +8,39 @@ interface DefaultWidgetInstance {
 }
 
 export const DEFAULT_WIDGET_INSTANCES: DefaultWidgetInstance[] = [
-  { id: 'portfolio-overview-1', widgetType: 'portfolio-overview' },
-  { id: 'market-watch-1', widgetType: 'market-watch' },
   { id: 'alert-1', widgetType: 'alert' },
-  { id: 'chat-1', widgetType: 'chat' },
-  { id: 'agent-1', widgetType: 'agent' },
-  { id: 'news-feed-1', widgetType: 'news-feed' },
 ];
 
 const MOCK_TABS_BY_TYPE: Record<WidgetType, WidgetData['tabs']> = {
-  'portfolio-overview': [
-    {
-      label: 'Summary',
-      content: 'Total portfolio value and allocation breakdown.',
-      items: ['BTC: $42,150 (35%)', 'ETH: $18,200 (15%)', 'SOL: $12,800 (11%)', 'USDT: $47,000 (39%)'],
-    },
-    {
-      label: 'History',
-      content: 'Recent portfolio changes.',
-      items: ['+2.4% today', '-0.8% this week', '+12.1% this month'],
-    },
-  ],
-  'market-watch': [
-    {
-      label: 'Favorites',
-      content: 'Tracked assets.',
-      items: ['BTC/USD 42,150.00 +1.2%', 'ETH/USD 2,280.50 -0.3%', 'SOL/USD 98.40 +5.1%'],
-    },
-    {
-      label: 'Gainers',
-      content: 'Top gainers today.',
-      items: ['PEPE +18.4%', 'ARB +12.1%', 'INJ +9.7%'],
-    },
-    {
-      label: 'Losers',
-      content: 'Top losers today.',
-      items: ['DOGE -4.2%', 'SHIB -3.8%', 'ADA -2.1%'],
-    },
-  ],
-  'recent-trades': [
-    {
-      label: 'My Trades',
-      content: 'Your recent trade history.',
-      items: ['BUY 0.5 BTC @ 41,800', 'SELL 2.0 ETH @ 2,310', 'BUY 100 SOL @ 95.20'],
-    },
-    {
-      label: 'Open Orders',
-      content: 'Currently open orders.',
-      items: ['LIMIT BUY BTC @ 40,000', 'LIMIT SELL ETH @ 2,500'],
-    },
-  ],
-  'order-book': [
-    {
-      label: 'BTC/USD',
-      content: 'Live order book for BTC/USD.',
-      items: ['ASK 42,200 (1.2)', 'ASK 42,180 (0.8)', 'ASK 42,160 (2.5)', '--- SPREAD 10 ---', 'BID 42,150 (3.1)', 'BID 42,130 (1.5)', 'BID 42,100 (4.2)'],
-    },
-    {
-      label: 'ETH/USD',
-      content: 'Live order book for ETH/USD.',
-      items: ['ASK 2,285 (12)', 'ASK 2,283 (8)', 'ASK 2,281 (25)', '--- SPREAD 1 ---', 'BID 2,280 (18)', 'BID 2,278 (10)', 'BID 2,275 (30)'],
-    },
-  ],
-  'performance-chart': [
-    {
-      label: '1D',
-      content: 'Daily performance.',
-      items: ['Open: $41,800', 'High: $42,400', 'Low: $41,600', 'Current: $42,150', 'Volume: $1.2B'],
-    },
-    {
-      label: '1W',
-      content: 'Weekly performance.',
-      items: ['Start: $42,500', 'High: $43,100', 'Low: $41,200', 'Current: $42,150', 'Change: -0.8%'],
-    },
-    {
-      label: '1M',
-      content: 'Monthly performance.',
-      items: ['Start: $37,600', 'High: $43,100', 'Low: $36,800', 'Current: $42,150', 'Change: +12.1%'],
-    },
-  ],
-  'news-feed': [
-    {
-      label: 'Latest',
-      content: 'Breaking news.',
-      items: ['Bitcoin ETF inflows hit $500M daily record', 'Ethereum Dencun upgrade goes live', 'SEC delays decision on Solana ETF'],
-    },
-    {
-      label: 'Trending',
-      content: 'Most discussed topics.',
-      items: ['#Bitcoin halving countdown', '#DeFi summer 2.0', '#Layer2 scaling wars'],
-    },
-  ],
   alert: [
     {
       label: 'Alerts',
-      content: 'Active and recent alerts.',
+      content: 'Active and recent alerts across all agents.',
       items: [
-        'BTC > $42,000 — triggered 2m ago',
-        'ETH gas < 20 gwei — triggered 15m ago',
-        'SOL +5% in 1h — triggered 8m ago',
-        'BTC < $40,000 — 2 days ago',
-        'Portfolio -3% daily — 5 days ago',
-        'ETH > $2,500 — 1 week ago',
+        'AAPL 4.50% 2030 spread widened +15bps — triggered 3m ago',
+        'New issue: MSFT 5.25% 2034 priced at T+85 — triggered 12m ago',
+        'JPM 3.75% 2028 downgraded to A- by S&P — triggered 45m ago',
+        'IG CDX spread breached 75bps threshold — triggered 1h ago',
+        'TSLA 5.30% 2029 bid dropped 2pts — 3 hours ago',
+        'Treasury 10Y yield crossed 4.50% — 5 hours ago',
+        'GS 4.00% 2031 block trade $50M detected — yesterday',
+        'Portfolio duration exceeded 6.2yr limit — 2 days ago',
       ],
     },
   ],
   chat: [
     {
       label: 'Chat',
-      content: 'Discussion channel.',
+      content: 'Trading desk discussion.',
       items: [
-        'alice: anyone watching BTC?',
-        'bob: looks bullish to me',
-        'charlie: volume is crazy today',
-        'dave: careful with leverage',
-        'signal_bot: BUY BTC 42,100 TP 43,500 SL 41,000',
-        'trader1: took the long, lets go',
-        'analyst: RSI showing overbought on 4H',
+        'sarah: new MSFT deal looks tight, anyone bidding?',
+        'mike: we lifted the 5yr at T+82, decent concession',
+        'desk_bot: ALERT — IG primary pipeline $8.2B expected this week',
+        'jenny: seeing heavy selling in HY energy names',
+        'tom: JPM downgrade just hit, CDS widening fast',
+        'sarah: swapping out of AAPL 30s into GOOGL 29s',
+        'risk_monitor: portfolio DV01 at $42,300, within limits',
+        'mike: anyone have a bid on $10M GS 4s of 31?',
       ],
     },
   ],
@@ -132,17 +48,17 @@ const MOCK_TABS_BY_TYPE: Record<WidgetType, WidgetData['tabs']> = {
     {
       label: 'Status',
       content: 'Agent runtime status.',
-      items: ['Status: Running', 'Uptime: 4h 23m', 'Trades executed: 12', 'P&L: +$340.50', 'Strategy: Grid Bot'],
+      items: ['Status: Running', 'Uptime: 4h 23m', 'Bonds monitored: 128', 'Alerts sent: 24', 'Strategy: Spread Monitor'],
     },
     {
       label: 'Logs',
       content: 'Recent agent activity.',
-      items: ['14:23 — Opened long BTC @ 42,100', '14:18 — Closed short ETH @ 2,278 (+$45)', '14:05 — Grid level hit, placed order'],
+      items: ['14:23 — New issue detected: MSFT 5.25% 2034', '14:18 — Spread alert: AAPL 4.50% 2030 +15bps', '14:05 — Rating change: JPM downgraded to A-'],
     },
     {
       label: 'Config',
       content: 'Agent configuration.',
-      items: ['Pair: BTC/USD', 'Grid range: 40,000–44,000', 'Grid levels: 20', 'Order size: 0.01 BTC', 'Take profit: 1.5%'],
+      items: ['Universe: USD IG Corporate', 'Spread threshold: 10bps', 'Rating filter: A- and above', 'Sectors: Financials, Tech', 'Tenor: 2yr–10yr'],
     },
   ],
 };
@@ -170,3 +86,56 @@ export const fetchMockWidgetsData = (): Promise<WidgetsState> =>
   new Promise((resolve) => {
     setTimeout(() => resolve(buildDefaultWidgetsData()), 100);
   });
+
+// ─── Mock Agents ──────────────────────────────────────────────────────────────
+
+const MOCK_AGENTS: AgentData[] = [
+  {
+    id: 'agent-1001',
+    name: 'IG New Issues Monitor',
+    instruction: 'Monitor all new USD investment-grade corporate bond issues. Alert when concession exceeds 10bps or deal is upsized. Focus on A-rated and above issuers in Technology and Financials sectors.',
+    status: 'active',
+    alertCount: 245,
+    createdAt: '2025-12-10T08:00:00Z',
+    updatedAt: '2026-02-28T14:23:00Z',
+  },
+  {
+    id: 'agent-1002',
+    name: 'Spread Widening Alert',
+    instruction: 'Track OAS spread movements on my watchlist bonds. Alert when any position widens more than 10bps intraday or 25bps over 5 business days. Include CDX IG and HY index levels for context.',
+    status: 'active',
+    alertCount: 180,
+    createdAt: '2025-12-15T10:30:00Z',
+    updatedAt: '2026-02-27T09:15:00Z',
+  },
+  {
+    id: 'agent-1003',
+    name: 'Rating Change Detector',
+    instruction: 'Monitor S&P, Moody\'s, and Fitch rating actions on all bonds in my portfolio. Alert on downgrades, negative outlook changes, and CreditWatch placements. Include fallen angel risk for BBB- names.',
+    status: 'active',
+    alertCount: 156,
+    createdAt: '2026-01-05T12:00:00Z',
+    updatedAt: '2026-02-26T18:45:00Z',
+  },
+  {
+    id: 'agent-1004',
+    name: 'EBITDA Coverage Screener',
+    instruction: 'Screen new bond issues with EBITDA interest coverage ratio above 4x. Focus on 2yr–10yr maturities in investment-grade corporates. Flag any issuer with declining coverage trend over last 4 quarters.',
+    status: 'stopped',
+    alertCount: 144,
+    createdAt: '2026-01-20T09:00:00Z',
+    updatedAt: '2026-02-25T11:30:00Z',
+  },
+];
+
+export function buildDefaultAgents(): AgentsState {
+  const state: AgentsState = {};
+  for (const agent of MOCK_AGENTS) {
+    state[agent.id] = agent;
+  }
+  return state;
+}
+
+export function createAgentWidgetData(widgetId: string, agent: AgentData): WidgetData {
+  return createWidgetData(widgetId, 'agent');
+}

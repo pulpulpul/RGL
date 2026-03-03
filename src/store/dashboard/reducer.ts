@@ -7,10 +7,16 @@ import {
   SET_ALL_PERSONA,
   CLEAR_ALL_PERSONA,
   SET_PERSONA,
+  ADD_AGENT,
+  UPDATE_AGENT,
+  REMOVE_AGENT,
+  SET_AGENT_STATUS,
+  SET_AGENTS,
 } from './types';
-import type { DashboardState, PersonaState, DashboardActionTypes } from './types';
+import type { DashboardState, PersonaState, AgentsState, DashboardActionTypes } from './types';
 
 const PERSONA_STORAGE_KEY = 'now-persona';
+const AGENTS_STORAGE_KEY = 'now-agents';
 
 function loadPersona(): PersonaState {
   try {
@@ -26,9 +32,24 @@ function persistPersona(state: PersonaState) {
   localStorage.setItem(PERSONA_STORAGE_KEY, JSON.stringify(state));
 }
 
+function loadAgents(): AgentsState {
+  try {
+    const stored = localStorage.getItem(AGENTS_STORAGE_KEY);
+    if (stored) return JSON.parse(stored) as AgentsState;
+  } catch {
+    // ignore
+  }
+  return {};
+}
+
+function persistAgents(state: AgentsState) {
+  localStorage.setItem(AGENTS_STORAGE_KEY, JSON.stringify(state));
+}
+
 const initialState: DashboardState = {
   widgets: {},
   persona: loadPersona(),
+  agents: loadAgents(),
 };
 
 export const dashboardReducer = (
@@ -92,6 +113,49 @@ export const dashboardReducer = (
     case SET_PERSONA:
       persistPersona(action.payload);
       return { ...state, persona: action.payload };
+
+    // ── Agents ─────────────────────────────────────────────────────────────
+    case ADD_AGENT: {
+      const agents = { ...state.agents, [action.payload.id]: action.payload };
+      persistAgents(agents);
+      return { ...state, agents };
+    }
+
+    case UPDATE_AGENT: {
+      const { id, data } = action.payload;
+      const existing = state.agents[id];
+      if (!existing) return state;
+      const agents = { ...state.agents, [id]: { ...existing, ...data } };
+      persistAgents(agents);
+      return { ...state, agents };
+    }
+
+    case REMOVE_AGENT: {
+      const agents = { ...state.agents };
+      delete agents[action.payload];
+      // Also remove any dashboard widget linked to this agent
+      const widgets = { ...state.widgets };
+      for (const [wid, w] of Object.entries(widgets)) {
+        if (w.settings?.agentId === action.payload) {
+          delete widgets[wid];
+        }
+      }
+      persistAgents(agents);
+      return { ...state, agents, widgets };
+    }
+
+    case SET_AGENT_STATUS: {
+      const { id, status } = action.payload;
+      const agent = state.agents[id];
+      if (!agent) return state;
+      const agents = { ...state.agents, [id]: { ...agent, status } };
+      persistAgents(agents);
+      return { ...state, agents };
+    }
+
+    case SET_AGENTS:
+      persistAgents(action.payload);
+      return { ...state, agents: action.payload };
 
     default:
       return state;

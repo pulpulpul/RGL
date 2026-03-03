@@ -6,12 +6,6 @@ import { WIDGET_REGISTRY } from '../../widgets/registry';
 import type { RootState } from '../../store/rootReducer';
 
 const WIDGET_TYPE_COLORS: Record<WidgetType, string> = {
-  'portfolio-overview': '#4ade80',
-  'market-watch': '#60a5fa',
-  'recent-trades': '#f59e0b',
-  'order-book': '#a78bfa',
-  'performance-chart': '#f472b6',
-  'news-feed': '#38bdf8',
   alert: '#ef4444',
   chat: '#34d399',
   agent: '#fb923c',

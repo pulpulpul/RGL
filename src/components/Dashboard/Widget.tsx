@@ -45,12 +45,6 @@ const TitleText = styled.span`
 `;
 
 const TYPE_COLORS: Record<WidgetType, string> = {
-  'portfolio-overview': '#4ade80',
-  'market-watch': '#60a5fa',
-  'recent-trades': '#f59e0b',
-  'order-book': '#a78bfa',
-  'performance-chart': '#f472b6',
-  'news-feed': '#38bdf8',
   alert: '#ef4444',
   chat: '#34d399',
   agent: '#fb923c',

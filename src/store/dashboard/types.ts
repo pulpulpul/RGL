@@ -57,11 +57,28 @@ export interface PersonaState {
   tenorPreferences: string[];
 }
 
+// ─── Agent types ────────────────────────────────────────────────────────────
+
+export type AgentStatus = 'active' | 'stopped';
+
+export interface AgentData {
+  id: string;
+  name: string;
+  instruction: string;
+  status: AgentStatus;
+  alertCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type AgentsState = Record<string, AgentData>;
+
 // ─── Combined state ──────────────────────────────────────────────────────────
 
 export interface DashboardState {
   widgets: WidgetsState;
   persona: PersonaState;
+  agents: AgentsState;
 }
 
 // ─── Action constants ────────────────────────────────────────────────────────
@@ -75,6 +92,12 @@ export const TOGGLE_PERSONA_ITEM = 'TOGGLE_PERSONA_ITEM' as const;
 export const SET_ALL_PERSONA = 'SET_ALL_PERSONA' as const;
 export const CLEAR_ALL_PERSONA = 'CLEAR_ALL_PERSONA' as const;
 export const SET_PERSONA = 'SET_PERSONA' as const;
+
+export const ADD_AGENT = 'ADD_AGENT' as const;
+export const UPDATE_AGENT = 'UPDATE_AGENT' as const;
+export const REMOVE_AGENT = 'REMOVE_AGENT' as const;
+export const SET_AGENT_STATUS = 'SET_AGENT_STATUS' as const;
+export const SET_AGENTS = 'SET_AGENTS' as const;
 
 // ─── Action interfaces ──────────────────────────────────────────────────────
 
@@ -126,6 +149,36 @@ interface SetPersonaAction {
   [key: string]: unknown;
 }
 
+interface AddAgentAction {
+  type: typeof ADD_AGENT;
+  payload: AgentData;
+  [key: string]: unknown;
+}
+
+interface UpdateAgentAction {
+  type: typeof UPDATE_AGENT;
+  payload: { id: string; data: Partial<AgentData> };
+  [key: string]: unknown;
+}
+
+interface RemoveAgentAction {
+  type: typeof REMOVE_AGENT;
+  payload: string;
+  [key: string]: unknown;
+}
+
+interface SetAgentStatusAction {
+  type: typeof SET_AGENT_STATUS;
+  payload: { id: string; status: AgentStatus };
+  [key: string]: unknown;
+}
+
+interface SetAgentsAction {
+  type: typeof SET_AGENTS;
+  payload: AgentsState;
+  [key: string]: unknown;
+}
+
 export type DashboardActionTypes =
   | SetWidgetsDataAction
   | UpdateWidgetDataAction
@@ -134,4 +187,9 @@ export type DashboardActionTypes =
   | TogglePersonaItemAction
   | SetAllPersonaAction
   | ClearAllPersonaAction
-  | SetPersonaAction;
+  | SetPersonaAction
+  | AddAgentAction
+  | UpdateAgentAction
+  | RemoveAgentAction
+  | SetAgentStatusAction
+  | SetAgentsAction;

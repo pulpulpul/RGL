@@ -7,12 +7,20 @@ import {
   SET_ALL_PERSONA,
   CLEAR_ALL_PERSONA,
   SET_PERSONA,
+  ADD_AGENT,
+  UPDATE_AGENT,
+  REMOVE_AGENT,
+  SET_AGENT_STATUS,
+  SET_AGENTS,
 } from './types';
 import type {
   WidgetsState,
   WidgetData,
   PersonaCategory,
   PersonaState,
+  AgentData,
+  AgentStatus,
+  AgentsState,
   DashboardActionTypes,
 } from './types';
 
@@ -69,4 +77,37 @@ export const clearAllPersona = (
 export const setPersona = (state: PersonaState): DashboardActionTypes => ({
   type: SET_PERSONA,
   payload: state,
+});
+
+// ─── Agent actions ──────────────────────────────────────────────────────────
+
+export const addAgent = (agent: AgentData): DashboardActionTypes => ({
+  type: ADD_AGENT,
+  payload: agent,
+});
+
+export const updateAgent = (
+  id: string,
+  data: Partial<AgentData>,
+): DashboardActionTypes => ({
+  type: UPDATE_AGENT,
+  payload: { id, data },
+});
+
+export const removeAgent = (id: string): DashboardActionTypes => ({
+  type: REMOVE_AGENT,
+  payload: id,
+});
+
+export const setAgentStatus = (
+  id: string,
+  status: AgentStatus,
+): DashboardActionTypes => ({
+  type: SET_AGENT_STATUS,
+  payload: { id, status },
+});
+
+export const setAgents = (agents: AgentsState): DashboardActionTypes => ({
+  type: SET_AGENTS,
+  payload: agents,
 });

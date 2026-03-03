@@ -1,12 +1,16 @@
 import { memo, useState, useCallback } from 'react';
 import styled from 'styled-components';
 import type { WidgetType } from '../../widgets/types';
+import type { AgentData } from '../../store/dashboard/types';
 import { SettingsMenu } from './SettingsMenu';
 import { AddWidgetPanel } from './AddWidgetPanel';
+import { AgentManager } from '../AgentManager';
 
 interface HeaderProps {
   onResetLayout: () => void;
   onAddWidget: (widgetType: WidgetType) => void;
+  onAddAgentToDashboard: (agent: AgentData) => void;
+  onRemoveAgentFromDashboard: (agentId: string) => void;
 }
 
 const HeaderBar = styled.header`
@@ -81,16 +85,24 @@ const IconButton = styled.button`
   }
 `;
 
+const AgentManagerWrapper = styled.div`
+  position: relative;
+`;
+
 export const Header = memo(function Header({
   onResetLayout,
   onAddWidget,
+  onAddAgentToDashboard,
+  onRemoveAgentFromDashboard,
 }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [agentPanelOpen, setAgentPanelOpen] = useState(false);
 
   const handleMenuToggle = useCallback(() => {
     setMenuOpen((prev) => !prev);
     setPanelOpen(false);
+    setAgentPanelOpen(false);
   }, []);
 
   const handleMenuClose = useCallback(() => {
@@ -105,6 +117,7 @@ export const Header = memo(function Header({
   const handlePanelToggle = useCallback(() => {
     setPanelOpen((prev) => !prev);
     setMenuOpen(false);
+    setAgentPanelOpen(false);
   }, []);
 
   const handlePanelClose = useCallback(() => {
@@ -119,10 +132,36 @@ export const Header = memo(function Header({
     [onAddWidget],
   );
 
+  const handleAgentPanelToggle = useCallback(() => {
+    setAgentPanelOpen((prev) => !prev);
+    setPanelOpen(false);
+    setMenuOpen(false);
+  }, []);
+
+  const handleAgentPanelClose = useCallback(() => {
+    setAgentPanelOpen(false);
+  }, []);
+
   return (
     <HeaderBar>
       <Title>Now</Title>
       <Controls>
+        <AgentManagerWrapper>
+          <AddWidgetButton onClick={handleAgentPanelToggle}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2a4 4 0 0 1 4 4v2a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z" />
+              <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
+            </svg>
+            Agents
+          </AddWidgetButton>
+          {agentPanelOpen && (
+            <AgentManager
+              onClose={handleAgentPanelClose}
+              onAddToDashboard={onAddAgentToDashboard}
+              onRemoveFromDashboard={onRemoveAgentFromDashboard}
+            />
+          )}
+        </AgentManagerWrapper>
         <AddWidgetWrapper>
           <AddWidgetButton onClick={handlePanelToggle}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

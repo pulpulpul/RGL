@@ -200,8 +200,19 @@ export function Dashboard({
       const droppedAt = dropLayout.find((l) => l.i === item.i);
       if (!droppedAt) return;
 
-      // Add widget data to the store
-      dispatch(addWidget(createWidgetData(id, widgetType)));
+      // Build widget data — if an agent, attach the agentId from drag payload
+      const data = createWidgetData(id, widgetType);
+      const agentPayload = dragEvent.dataTransfer?.getData('application/x-agent-id');
+      if (widgetType === 'agent' && agentPayload) {
+        try {
+          const { id: agentId, name } = JSON.parse(agentPayload);
+          data.settings = { ...data.settings, agentId };
+          data.title = name;
+        } catch {
+          // ignore invalid payload
+        }
+      }
+      dispatch(addWidget(data));
 
       // Build layout from our stored layout (original sizes) + the new item.
       // This prevents the grid's intermediate compaction from shrinking

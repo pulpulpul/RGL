@@ -1,6 +1,9 @@
 import { memo } from 'react';
+import { useSelector } from 'react-redux';
 import styled from 'styled-components';
 import type { WidgetTypeProps } from './types';
+import { selectAgentById } from '../../store/dashboard/selectors';
+import type { RootState } from '../../store/rootReducer';
 
 const Wrapper = styled.div`
   padding: 10px 12px;
@@ -88,7 +91,81 @@ function parseLog(item: string) {
   return { time: match[1], text: match[2] };
 }
 
-export const AgentWidget = memo(function AgentWidget({ tab }: WidgetTypeProps) {
+const StatusDot = styled.span<{ $active: boolean }>`
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: ${(p) => (p.$active ? '#4ade80' : '#555')};
+  margin-right: 6px;
+`;
+
+const AgentHeader = styled.div`
+  display: flex;
+  align-items: center;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #1e1e38;
+  font-size: 12px;
+  color: #ccc;
+`;
+
+const AgentStatus = styled.span<{ $active: boolean }>`
+  font-weight: 600;
+  color: ${(p) => (p.$active ? '#4ade80' : '#888')};
+`;
+
+const InstructionText = styled.div`
+  font-size: 11px;
+  color: #888;
+  line-height: 1.5;
+  white-space: pre-wrap;
+`;
+
+function ConnectedAgentView({ agentId }: { agentId: string }) {
+  const agent = useSelector((state: RootState) => selectAgentById(state, agentId));
+
+  if (!agent) {
+    return <Wrapper style={{ color: '#555', fontSize: 12 }}>Agent not found.</Wrapper>;
+  }
+
+  const isActive = agent.status === 'active';
+
+  return (
+    <Wrapper>
+      <AgentHeader>
+        <StatusDot $active={isActive} />
+        <AgentStatus $active={isActive}>
+          {isActive ? 'Running' : 'Stopped'}
+        </AgentStatus>
+      </AgentHeader>
+      <MetricGrid>
+        <MetricCard $accent="#4ade80">
+          <MetricLabel>Status</MetricLabel>
+          <MetricValue $color={isActive ? '#4ade80' : '#888'}>
+            {isActive ? 'Active' : 'Stopped'}
+          </MetricValue>
+        </MetricCard>
+        <MetricCard $accent="#ef4444">
+          <MetricLabel>Alerts</MetricLabel>
+          <MetricValue>{agent.alertCount}</MetricValue>
+        </MetricCard>
+      </MetricGrid>
+      <InstructionText style={{ marginTop: 8 }}>
+        {agent.instruction}
+      </InstructionText>
+    </Wrapper>
+  );
+}
+
+export const AgentWidget = memo(function AgentWidget({ tab, widget }: WidgetTypeProps) {
+  const agentId = widget.settings?.agentId as string | undefined;
+
+  if (agentId) {
+    return <ConnectedAgentView agentId={agentId} />;
+  }
+
+  // Fallback: generic mock data view for agents without a linked agentId
   const hasLogs = tab.items.some(isLogFormat);
 
   if (hasLogs) {
