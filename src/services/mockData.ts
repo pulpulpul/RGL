@@ -136,6 +136,3 @@ export function buildDefaultAgents(): AgentsState {
   return state;
 }
 
-export function createAgentWidgetData(widgetId: string, agent: AgentData): WidgetData {
-  return createWidgetData(widgetId, 'agent');
-}

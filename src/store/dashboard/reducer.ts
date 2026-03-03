@@ -13,10 +13,11 @@ import {
   SET_AGENT_STATUS,
   SET_AGENTS,
 } from './types';
-import type { DashboardState, PersonaState, AgentsState, DashboardActionTypes } from './types';
+import type { DashboardState, PersonaState, AgentsState, WidgetsState, DashboardActionTypes } from './types';
 
 const PERSONA_STORAGE_KEY = 'now-persona';
 const AGENTS_STORAGE_KEY = 'now-agents';
+const WIDGETS_STORAGE_KEY = 'now-widgets';
 
 function loadPersona(): PersonaState {
   try {
@@ -46,8 +47,22 @@ function persistAgents(state: AgentsState) {
   localStorage.setItem(AGENTS_STORAGE_KEY, JSON.stringify(state));
 }
 
+function loadWidgets(): WidgetsState {
+  try {
+    const stored = localStorage.getItem(WIDGETS_STORAGE_KEY);
+    if (stored) return JSON.parse(stored) as WidgetsState;
+  } catch {
+    // ignore
+  }
+  return {};
+}
+
+function persistWidgets(state: WidgetsState) {
+  localStorage.setItem(WIDGETS_STORAGE_KEY, JSON.stringify(state));
+}
+
 const initialState: DashboardState = {
-  widgets: {},
+  widgets: loadWidgets(),
   persona: loadPersona(),
   agents: loadAgents(),
 };
@@ -59,27 +74,28 @@ export const dashboardReducer = (
   switch (action.type) {
     // ── Widgets ────────────────────────────────────────────────────────────
     case SET_WIDGETS_DATA:
+      persistWidgets(action.payload);
       return { ...state, widgets: action.payload };
 
     case UPDATE_WIDGET_DATA: {
       const { id, data } = action.payload;
       const existing = state.widgets[id];
       if (!existing) return state;
-      return {
-        ...state,
-        widgets: { ...state.widgets, [id]: { ...existing, ...data } },
-      };
+      const widgets = { ...state.widgets, [id]: { ...existing, ...data } };
+      persistWidgets(widgets);
+      return { ...state, widgets };
     }
 
-    case ADD_WIDGET:
-      return {
-        ...state,
-        widgets: { ...state.widgets, [action.payload.id]: action.payload },
-      };
+    case ADD_WIDGET: {
+      const widgets = { ...state.widgets, [action.payload.id]: action.payload };
+      persistWidgets(widgets);
+      return { ...state, widgets };
+    }
 
     case REMOVE_WIDGET: {
       const next = { ...state.widgets };
       delete next[action.payload];
+      persistWidgets(next);
       return { ...state, widgets: next };
     }
 
@@ -141,6 +157,7 @@ export const dashboardReducer = (
         }
       }
       persistAgents(agents);
+      persistWidgets(widgets);
       return { ...state, agents, widgets };
     }
 

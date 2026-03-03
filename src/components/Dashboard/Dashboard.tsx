@@ -67,19 +67,19 @@ export function Dashboard({
   }
 
   // Sync widget store with the persisted layout on initial load.
-  // Only include defaults that have a layout item; create data for
-  // dynamically added widgets whose IDs are in the layout.
+  // Prefer persisted widget data (from localStorage via reducer);
+  // fall back to mock defaults, then to freshly created data.
   useEffect(() => {
     const layoutIds = new Set(layoutsRef.current.map((l) => l.i));
+    const persisted = widgetsRef.current;
     fetchMockWidgetsData().then((defaults) => {
-      const synced = { ...defaults };
-      // Remove defaults that were deleted (no layout item)
-      for (const id of Object.keys(synced)) {
-        if (!layoutIds.has(id)) delete synced[id];
-      }
-      // Create data for dynamic widgets present in layout but not in defaults
+      const synced: Record<string, typeof defaults[string]> = {};
       for (const id of layoutIds) {
-        if (!synced[id]) {
+        if (persisted[id]) {
+          synced[id] = persisted[id];
+        } else if (defaults[id]) {
+          synced[id] = defaults[id];
+        } else {
           const widgetType = parseWidgetType(id);
           if (widgetType) synced[id] = createWidgetData(id, widgetType);
         }
