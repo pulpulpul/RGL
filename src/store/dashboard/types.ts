@@ -96,7 +96,6 @@ export const SET_PERSONA = 'SET_PERSONA' as const;
 export const ADD_AGENT = 'ADD_AGENT' as const;
 export const UPDATE_AGENT = 'UPDATE_AGENT' as const;
 export const REMOVE_AGENT = 'REMOVE_AGENT' as const;
-export const SET_AGENT_STATUS = 'SET_AGENT_STATUS' as const;
 export const SET_AGENTS = 'SET_AGENTS' as const;
 
 // ─── Action interfaces ──────────────────────────────────────────────────────
@@ -167,12 +166,6 @@ interface RemoveAgentAction {
   [key: string]: unknown;
 }
 
-interface SetAgentStatusAction {
-  type: typeof SET_AGENT_STATUS;
-  payload: { id: string; status: AgentStatus };
-  [key: string]: unknown;
-}
-
 interface SetAgentsAction {
   type: typeof SET_AGENTS;
   payload: AgentsState;
@@ -191,5 +184,4 @@ export type DashboardActionTypes =
   | AddAgentAction
   | UpdateAgentAction
   | RemoveAgentAction
-  | SetAgentStatusAction
   | SetAgentsAction;

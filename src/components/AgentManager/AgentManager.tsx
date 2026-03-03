@@ -4,9 +4,8 @@ import type { RootState } from '../../store/rootReducer';
 import type { AgentData } from '../../store/dashboard/types';
 import {
   addAgent,
-  updateAgent,
   removeAgent,
-  setAgentStatus,
+  updateAgent,
 } from '../../store/dashboard/actions';
 import {
   selectAgentsList,
@@ -70,7 +69,7 @@ export const AgentManager = memo(function AgentManager({
       const agent = agents.find((a) => a.id === id);
       if (!agent) return;
       const newStatus = agent.status === 'active' ? 'stopped' : 'active';
-      dispatch(setAgentStatus(id, newStatus));
+      dispatch(updateAgent(id, { status: newStatus }));
     },
     [agents, dispatch],
   );

@@ -10,7 +10,6 @@ import {
   ADD_AGENT,
   UPDATE_AGENT,
   REMOVE_AGENT,
-  SET_AGENT_STATUS,
   SET_AGENTS,
 } from './types';
 import type { DashboardState, PersonaState, AgentsState, WidgetsState, DashboardActionTypes } from './types';
@@ -159,15 +158,6 @@ export const dashboardReducer = (
       persistAgents(agents);
       persistWidgets(widgets);
       return { ...state, agents, widgets };
-    }
-
-    case SET_AGENT_STATUS: {
-      const { id, status } = action.payload;
-      const agent = state.agents[id];
-      if (!agent) return state;
-      const agents = { ...state.agents, [id]: { ...agent, status } };
-      persistAgents(agents);
-      return { ...state, agents };
     }
 
     case SET_AGENTS:

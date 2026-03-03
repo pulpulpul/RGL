@@ -10,7 +10,6 @@ import {
   ADD_AGENT,
   UPDATE_AGENT,
   REMOVE_AGENT,
-  SET_AGENT_STATUS,
   SET_AGENTS,
 } from './types';
 import type {
@@ -19,7 +18,6 @@ import type {
   PersonaCategory,
   PersonaState,
   AgentData,
-  AgentStatus,
   AgentsState,
   DashboardActionTypes,
 } from './types';
@@ -97,14 +95,6 @@ export const updateAgent = (
 export const removeAgent = (id: string): DashboardActionTypes => ({
   type: REMOVE_AGENT,
   payload: id,
-});
-
-export const setAgentStatus = (
-  id: string,
-  status: AgentStatus,
-): DashboardActionTypes => ({
-  type: SET_AGENT_STATUS,
-  payload: { id, status },
 });
 
 export const setAgents = (agents: AgentsState): DashboardActionTypes => ({
