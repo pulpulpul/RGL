@@ -98,6 +98,7 @@ export const AgentManager = memo(function AgentManager({
         alertCount: 0,
         createdAt: now,
         updatedAt: now,
+        agentType: 'market-alerts',
       };
       dispatch(addAgent(agent));
     },

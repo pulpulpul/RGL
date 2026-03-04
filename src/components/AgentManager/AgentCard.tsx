@@ -64,7 +64,7 @@ export const AgentCard = memo(function AgentCard({
   }, [agent, isOnDashboard, onAddToDashboard, onRemoveFromDashboard]);
 
   return (
-    <CardContainer draggable onDragStart={handleDragStart}>
+    <CardContainer draggable={!isOnDashboard} onDragStart={handleDragStart}>
       <CardDot $active={agent.status === 'active'} />
       <CardInfo>
         <CardName>{agent.name}</CardName>

@@ -146,9 +146,10 @@ export const CardName = styled.div`
 export const CardDesc = styled.div`
   font-size: 11px;
   color: #666;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 `;
 
 export const CardMeta = styled.div`

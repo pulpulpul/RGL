@@ -1,10 +1,11 @@
 import { memo, useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import type { RootState } from '../../store/rootReducer';
 import type { WidgetType } from '../../widgets/types';
 import { WIDGET_REGISTRY } from '../../widgets/registry';
 import { WIDGET_COMPONENTS } from '../../widgets/components';
+import { selectAgentById } from '../../store/dashboard/selectors';
 
 interface WidgetProps {
   widgetId: string;
@@ -81,6 +82,35 @@ const DeleteButton = styled.button`
   }
 `;
 
+const pulse = keyframes`
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+`;
+
+const AlertCountBadge = styled.span`
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: #ef4444;
+  padding: 1px 6px;
+  border-radius: 8px;
+  margin-left: 6px;
+  flex-shrink: 0;
+`;
+
+const LiveBadge = styled.span<{ $active: boolean }>`
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  flex-shrink: 0;
+  border: 1px solid ${(p) => (p.$active ? '#4ade80' : '#555')};
+  color: ${(p) => (p.$active ? '#4ade80' : '#555')};
+  animation: ${(p) => (p.$active ? pulse : 'none')} 2s ease-in-out infinite;
+`;
+
 const TabBar = styled.div`
   display: flex;
   gap: 0;
@@ -105,6 +135,10 @@ const Tab = styled.button<{ $active: boolean }>`
 
 export const Widget = memo(function Widget({ widgetId, onDelete }: WidgetProps) {
   const widget = useSelector((state: RootState) => state.widgets[widgetId]);
+  const agentId = widget?.settings?.agentId as string | undefined;
+  const agent = useSelector((state: RootState) =>
+    agentId ? selectAgentById(state, agentId) : undefined,
+  );
   const [activeTab, setActiveTab] = useState(0);
 
   const handleTabClick = useCallback((index: number) => {
@@ -119,12 +153,20 @@ export const Widget = memo(function Widget({ widgetId, onDelete }: WidgetProps) 
 
   const config = WIDGET_REGISTRY[widget.widgetType];
   const currentTab = widget.tabs[activeTab] ?? widget.tabs[0];
+  const isMarketAlerts = agent?.agentType === 'market-alerts';
+  const isAgentActive = agent?.status === 'active';
 
   return (
     <WidgetContainer>
       <TitleBar className="widget-drag-handle">
         <TypeBadge $color={TYPE_COLORS[widget.widgetType]} />
         <TitleText>{widget.title}</TitleText>
+        {isMarketAlerts && (
+          <>
+            <AlertCountBadge>{agent.alertCount}</AlertCountBadge>
+            <LiveBadge $active={!!isAgentActive}>LIVE</LiveBadge>
+          </>
+        )}
         {config.deletable && (
           <DeleteButton
             onClick={handleDelete}
@@ -138,7 +180,7 @@ export const Widget = memo(function Widget({ widgetId, onDelete }: WidgetProps) 
           </DeleteButton>
         )}
       </TitleBar>
-      {widget.tabs.length > 1 && (
+      {!isMarketAlerts && widget.tabs.length > 1 && (
         <TabBar>
           {widget.tabs.map((tab, i) => (
             <Tab

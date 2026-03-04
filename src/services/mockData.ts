@@ -98,6 +98,7 @@ const MOCK_AGENTS: AgentData[] = [
     alertCount: 245,
     createdAt: '2025-12-10T08:00:00Z',
     updatedAt: '2026-02-28T14:23:00Z',
+    agentType: 'market-alerts',
   },
   {
     id: 'agent-1002',
@@ -107,6 +108,7 @@ const MOCK_AGENTS: AgentData[] = [
     alertCount: 180,
     createdAt: '2025-12-15T10:30:00Z',
     updatedAt: '2026-02-27T09:15:00Z',
+    agentType: 'market-alerts',
   },
   {
     id: 'agent-1003',
@@ -116,6 +118,7 @@ const MOCK_AGENTS: AgentData[] = [
     alertCount: 156,
     createdAt: '2026-01-05T12:00:00Z',
     updatedAt: '2026-02-26T18:45:00Z',
+    agentType: 'market-alerts',
   },
   {
     id: 'agent-1004',
@@ -125,6 +128,7 @@ const MOCK_AGENTS: AgentData[] = [
     alertCount: 144,
     createdAt: '2026-01-20T09:00:00Z',
     updatedAt: '2026-02-25T11:30:00Z',
+    agentType: 'market-alerts',
   },
 ];
 

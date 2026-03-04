@@ -1,0 +1,1 @@
+export { MarketAlertsView } from './MarketAlertsView';

@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import type { WidgetTypeProps } from './types';
 import { selectAgentById } from '../../store/dashboard/selectors';
 import type { RootState } from '../../store/rootReducer';
+import { MarketAlertsView } from './MarketAlerts';
 
 const Wrapper = styled.div`
   padding: 10px 12px;
@@ -122,7 +123,7 @@ const InstructionText = styled.div`
   white-space: pre-wrap;
 `;
 
-function ConnectedAgentView({ agentId }: { agentId: string }) {
+function GenericAgentView({ agentId }: { agentId: string }) {
   const agent = useSelector((state: RootState) => selectAgentById(state, agentId));
 
   if (!agent) {
@@ -156,6 +157,20 @@ function ConnectedAgentView({ agentId }: { agentId: string }) {
       </InstructionText>
     </Wrapper>
   );
+}
+
+function ConnectedAgentView({ agentId }: { agentId: string }) {
+  const agent = useSelector((state: RootState) => selectAgentById(state, agentId));
+
+  if (!agent) {
+    return <Wrapper style={{ color: '#555', fontSize: 12 }}>Agent not found.</Wrapper>;
+  }
+
+  if (agent.agentType === 'market-alerts') {
+    return <MarketAlertsView agentId={agentId} agent={agent} />;
+  }
+
+  return <GenericAgentView agentId={agentId} />;
 }
 
 export const AgentWidget = memo(function AgentWidget({ tab, widget }: WidgetTypeProps) {

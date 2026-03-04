@@ -60,6 +60,7 @@ export interface PersonaState {
 // ─── Agent types ────────────────────────────────────────────────────────────
 
 export type AgentStatus = 'active' | 'stopped';
+export type AgentType = 'market-alerts' | 'generic';
 
 export interface AgentData {
   id: string;
@@ -69,6 +70,7 @@ export interface AgentData {
   alertCount: number;
   createdAt: string;
   updatedAt: string;
+  agentType?: AgentType;
 }
 
 export type AgentsState = Record<string, AgentData>;
